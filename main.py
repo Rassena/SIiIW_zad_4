@@ -28,14 +28,30 @@ for test_size in range(1, 9):
         "DecisionTreeClassifier(max_depth=7)": DecisionTreeClassifier(max_depth=7),
     }
 
-    pca = {
+    pcas = {
         "PCA(n_components=3)": PCA(n_components=3),
-        "PCA(n_components=3)": PCA(n_components=4),
-        "PCA(n_components=3)": PCA(n_components=5)
+        "PCA(n_components=6)": PCA(n_components=6),
+        "PCA(n_components=9)": PCA(n_components=9)
     }
 
     for classifier_name, classifier in classifiers.items():
         print("\n", classifier_name, "train size:", test_size*10, "%")
+
+        classifier.fit(X_train, y_train)
+        y_pred = classifier.predict(X_test)
+
+        accuracy = accuracy_score(y_test, y_pred)
+        precision = precision_score(y_test, y_pred, average="macro")
+        recall = recall_score(y_test, y_pred, average="macro")
+        confusion_mat = confusion_matrix(y_test, y_pred)
+
+        print("No preprocessed")
+        print("Accuracy: {:.2f}%".format(accuracy * 100))
+        print("Precision: {:.2f}%".format(precision * 100))
+        print("Recall: {:.2f}%".format(recall * 100))
+        # print("Confusion Matrix:")
+        # print(confusion_mat)
+
         for preprocessing_name, preprocessing in preprocessings.items():
             X_train_preprocessed = preprocessing.fit_transform(X_train)
             X_test_preprocessed = preprocessing.transform(X_test)
@@ -54,3 +70,22 @@ for test_size in range(1, 9):
             print("Recall: {:.2f}%".format(recall * 100))
             #print("Confusion Matrix:")
             #print(confusion_mat)
+            for pca_name, pca in pcas.items():
+
+                X_train_pca = pca.fit_transform(X_train_preprocessed)
+                X_test_pca = pca.transform(X_test_preprocessed)
+
+                classifier.fit(X_train_pca, y_train)
+                y_pred = classifier.predict(X_test_pca)
+
+                accuracy = accuracy_score(y_test, y_pred)
+                precision = precision_score(y_test, y_pred, average="macro")
+                recall = recall_score(y_test, y_pred, average="macro")
+                confusion_mat = confusion_matrix(y_test, y_pred)
+
+                print(preprocessing_name)
+                print(pca_name, "Accuracy: {:.2f}%".format(accuracy * 100))
+                print(pca_name, "Precision: {:.2f}%".format(precision * 100))
+                print(pca_name, "Recall: {:.2f}%".format(recall * 100))
+                # print("Confusion Matrix:")
+                # print(confusion_mat)
