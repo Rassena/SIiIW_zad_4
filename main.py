@@ -1,16 +1,41 @@
-# This is a sample Python script.
+import numpy as np
+import pandas as pd
+from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import cross_val_score
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import Normalizer, StandardScaler
+df = pd.read_csv(
+    "data/glass.data",
+    names=["ID", "RI", "NA2O", "MGO", "AL2O3", "SIO2", "K2O", "CAO", "BAO", "FE203", "TYPE"]
+)
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+print(df)
+
+metrics = ("accuracy", "f1_weighted", "recall_weighted")
+
+scaler = StandardScaler()
+normalizer = Normalizer()
+
+scaled_data = scaler.fit_transform(df)
+normalized_data = normalizer.transform(df)
+
+X = df.iloc[:, :-1].to_numpy()
+y = df.iloc[:, -1].to_numpy()
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+classifiers = {
+    "GaussianNB": GaussianNB(),
+    "DecisionTreeClassifier(max_depth=3)": DecisionTreeClassifier(max_depth=3),
+    "DecisionTreeClassifier(max_depth=5)": DecisionTreeClassifier(max_depth=5),
+    "DecisionTreeClassifier(max_depth=7)": DecisionTreeClassifier(max_depth=7),
+}
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+for classifier_name, classifier in classifiers.items():
+    for metric in metrics:
+        scores = cross_val_score(classifier, X, y, cv=3, scoring=metric)
+        print(classifier_name, metric, np.mean(scores))
+
+
